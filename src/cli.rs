@@ -5,7 +5,7 @@ use clap::Parser;
 #[command(
     name = "reimg",
     version,
-    about = "*",
+    about = "Image search and processing",
     long_about = None
 )]
 pub struct Cli {

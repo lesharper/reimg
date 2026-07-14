@@ -10,13 +10,9 @@ pub fn is_image(path: &Utf8Path) -> bool {
         e if e.eq_ignore_ascii_case("jpg")
             || e.eq_ignore_ascii_case("jpeg")
             || e.eq_ignore_ascii_case("png")
-            || e.eq_ignore_ascii_case("gif")
-            || e.eq_ignore_ascii_case("svg")
+            //|| e.eq_ignore_ascii_case("gif")
+            //|| e.eq_ignore_ascii_case("svg")
             || e.eq_ignore_ascii_case("webp")
             || e.eq_ignore_ascii_case("avif")
     )
 }
-
-// pub fn is_not_image(path: &Utf8Path) -> bool {
-//     !is_image(path)
-// }

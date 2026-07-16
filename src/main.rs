@@ -1,6 +1,8 @@
+// main.rs
 mod analyzer;
 mod cli;
 mod filters;
+mod remover;
 mod scanner;
 
 use anyhow::Result;
@@ -34,6 +36,24 @@ fn main() -> Result<()> {
         println!("Found {} unused image(s):", unused_images.len());
         for img in &unused_images {
             println!("  - {}", img);
+        }
+
+        // Интерактивный блок очистки
+        println!();
+        if remover::ask_confirm("Do you want to clean up unused images?")? {
+            let remover = remover::Remover::new(&unused_images);
+
+            if remover::ask_confirm(
+                "Delete ALL of them automatically? (Otherwise, you will review them one-by-one)",
+            )? {
+                println!("\nDeleting files automatically...");
+                remover.delete_all_auto()?;
+            } else {
+                println!("\nEntering manual deletion mode:");
+                remover.delete_manual()?;
+            }
+        } else {
+            println!("Cleanup skipped. Unused images remain untouched.");
         }
     }
 

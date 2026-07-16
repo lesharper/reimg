@@ -38,20 +38,25 @@ fn main() -> Result<()> {
             println!("  - {}", img);
         }
 
-        // Интерактивный блок очистки
         println!();
         if remover::ask_confirm("Do you want to clean up unused images?")? {
             let remover = remover::Remover::new(&unused_images);
 
-            if remover::ask_confirm(
+            // Будем сохранять статистику сюда
+            let stats = if remover::ask_confirm(
                 "Delete ALL of them automatically? (Otherwise, you will review them one-by-one)",
             )? {
                 println!("\nDeleting files automatically...");
-                remover.delete_all_auto()?;
+                remover.delete_all_auto()?
             } else {
                 println!("\nEntering manual deletion mode:");
-                remover.delete_manual()?;
-            }
+                remover.delete_manual()?
+            };
+
+            // Выводим красивую статистику
+            println!("\n--- Cleanup Statistics ---");
+            println!("Successfully deleted: {} files", stats.deleted_count);
+            println!("Disk space reclaimed: {}", stats.formatted_size());
         } else {
             println!("Cleanup skipped. Unused images remain untouched.");
         }

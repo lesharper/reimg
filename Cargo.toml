@@ -9,3 +9,6 @@ anyhow = "1.0.103"
 camino = "1.2.4"
 clap = { version = "4.6.1", features = ["derive"] }
 ignore = "0.4.28"
+image = "0.25.10"
+ravif = "0.13.0"
+webp = "0.3.1"

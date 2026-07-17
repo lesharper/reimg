@@ -1,6 +1,6 @@
+use crate::cli;
 use camino::Utf8PathBuf;
 use std::fs;
-use std::io::{self, Write};
 
 #[derive(Debug, Default)]
 pub struct CleanupStats {
@@ -70,7 +70,7 @@ impl<'a> Remover<'a> {
         for path in self.paths {
             let prompt = format!("Delete unused image: {}", path);
 
-            match ask_confirm(&prompt)? {
+            match cli::ask_confirm(&prompt)? {
                 true => {
                     let file_size = fs::metadata(path).map(|m| m.len()).unwrap_or(0);
 
@@ -98,15 +98,4 @@ impl<'a> Remover<'a> {
 
         Ok(stats)
     }
-}
-
-pub fn ask_confirm(prompt: &str) -> io::Result<bool> {
-    print!("{} [y/N]: ", prompt);
-    io::stdout().flush()?;
-
-    let mut input = String::new();
-    io::stdin().read_line(&mut input)?;
-    let trimmed = input.trim().to_lowercase();
-
-    Ok(trimmed == "y" || trimmed == "yes")
 }

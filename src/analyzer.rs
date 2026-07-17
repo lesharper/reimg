@@ -1,7 +1,9 @@
 // analyzer.rs
 use aho_corasick::{AhoCorasick, MatchKind};
 use camino::Utf8PathBuf;
+use rayon::prelude::*;
 use std::fs;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 pub struct Analyzer {
     images: Vec<Utf8PathBuf>,
@@ -32,40 +34,24 @@ impl Analyzer {
             return Vec::new();
         }
 
-        // Вектор флагов: true означает, что картинка используется в коде
-        let mut matched = vec![false; self.images.len()];
-        let mut matched_count = 0;
-        let total_images = self.images.len();
+        // Атомарные флаги для безопасной записи из разных потоков
+        let matched: Vec<AtomicBool> = (0..self.images.len())
+            .map(|_| AtomicBool::new(false))
+            .collect();
 
-        for file_path in files {
-            // Читаем файл как строку. Если это бинарник или системный мусор — read_to_string
-            // вернет ошибку, и мы просто пойдем дальше, что абсолютно безопасно.
-            let Ok(content) = fs::read_to_string(file_path) else {
-                continue;
-            };
-
-            // Сканируем контент автомата за один проход
-            for mat in self.ac.find_iter(&content) {
-                let idx = mat.pattern().as_usize();
-
-                if !matched[idx] {
-                    matched[idx] = true;
-                    matched_count += 1;
-
-                    // Оптимизация "Ранний выход": если мы уже нашли упоминание абсолютно
-                    // ВСЕХ картинок проекта, продолжать читать оставшиеся файлы бессмысленно.
-                    if matched_count == total_images {
-                        return Vec::new();
-                    }
+        // Параллельный итератор Rayon
+        files.par_iter().for_each(|file_path| {
+            if let Ok(content) = fs::read_to_string(file_path) {
+                for mat in self.ac.find_iter(&content) {
+                    matched[mat.pattern().as_usize()].store(true, Ordering::Relaxed);
                 }
             }
-        }
+        });
 
-        // Собираем пути картинок, у которых флаг остался false
         self.images
             .iter()
             .enumerate()
-            .filter(|(idx, _)| !matched[*idx])
+            .filter(|(idx, _)| !matched[*idx].load(Ordering::Relaxed))
             .map(|(_, path)| path.clone())
             .collect()
     }

@@ -11,4 +11,6 @@ clap = { version = "4.6.1", features = ["derive"] }
 ignore = "0.4.28"
 image = "0.25.10"
 ravif = "0.13.0"
+rayon = "1.12.0"
+rgb = "0.8.53"
 webp = "0.3.1"
